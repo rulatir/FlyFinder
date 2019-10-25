@@ -12,9 +12,11 @@
 
 namespace Flyfinder;
 
+use Flyfinder\Specification\HasExtension;
 use Flyfinder\Specification\InPath;
 use Flyfinder\Specification\IsHidden;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemInterface;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
@@ -48,6 +50,54 @@ class FinderTest extends TestCase
     public function testGetMethod()
     {
         $this->assertSame('find', $this->fixture->getMethod());
+    }
+
+    const DEEPLY_UNDER_HIDDEN_DIRECTORY = [ 'foo/bar/.hidden/baz/not-hidden.txt' ];
+    const DEEPLY_UNDER_DIRECTORY_WITH_EXTENSION = [ 'foo/bar/directory.ext/baz/not-hidden.txt' ];
+
+    public function testIfNotHiddenLetsSubpathsThrough()
+    {
+        $files = [ 'foo/bar/.hidden/baz/not-hidden.txt' ];
+        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
+        $this->fixture->setFilesystem($this->mockFileSystem($files));
+        $notHidden = (new IsHidden())->notSpecification();
+        $this->assertEquals(
+            $files,
+            $this->generatorToFileList($this->fixture->handle($notHidden))
+        );
+    }
+
+    public function testIfDoubleNotHiddenLetsSubpathsThrough()
+    {
+        $files = [ '.foo/.bar/not-hidden/.baz/.hidden.txt' ];
+        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
+        $this->fixture->setFilesystem($this->mockFileSystem($files));
+        $notHidden = (new IsHidden())->notSpecification()->notSpecification();
+        $this->assertEquals(
+            $files,
+            $this->generatorToFileList($this->fixture->handle($notHidden))
+        );
+    }
+
+    public function testIfNeitherHiddenNorExtLetsSubpathsThrough()
+    {
+        $files = [ 'foo/bar/.hidden/baz.ext/neither-hidden-nor.ext.zzz' ];
+        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
+        $this->fixture->setFilesystem($this->mockFileSystem($files));
+
+        $neitherHiddenNorExt =
+            (new IsHidden())->notSpecification()
+                ->andSpecification((new HasExtension(['ext']))->notSpecification());
+        $this->assertEquals(
+            $files,
+            $this->generatorToFileList($this->fixture->handle($neitherHiddenNorExt))
+        );
+
+        $neitherHiddenNorExtDeMorgan = (new IsHidden())->orSpecification(new HasExtension(['ext']))->notSpecification();
+        $this->assertEquals(
+            $files,
+            $this->generatorToFileList($this->fixture->handle($neitherHiddenNorExtDeMorgan))
+        );
     }
 
     /**
@@ -147,39 +197,26 @@ class FinderTest extends TestCase
     {
         $this->fixture->setAlgorithm($finderAlgorithm);
 
-        $filesystem = m::mock(Filesystem::class);
-
-        $pathList = [
-            'foo/bar/baz/file.txt',
-            'foo/bar/baz/file2.txt',
-            'foo/bar/baz/excluded/excluded.txt',
-            'foo/bar/baz/excluded/culled/culled.txt',
-            'foo/bar/baz/excluded/important/reincluded.txt',
-            'foo/bar/file3.txt',
-            'foo/lou/someSubdir/file4.txt',
-            'foo/irrelevant1/',
-            'irrelevant2/irrelevant3/irrelevantFile.txt'
-        ];
-
-        $fsContents = $this->mockFileTree($pathList);
-
-        $culledPaths = Finder::ALGORITHM_OPTIMIZED === $finderAlgorithm
-            ? [
-                'foo/irrelevant1',
-                'irrelevant2',
-                'foo/bar/baz/excluded/culled'
-            ]
-            : [
-
-            ];
-
-        $filesystem->shouldReceive('listContents')
-            ->zeroOrMoreTimes()
-            ->andReturnUsing(function(string $path) use ($culledPaths, $fsContents) : array {
-
-                $this->assertNotContains($path, $culledPaths);
-                return array_values($this->mockListContents($fsContents, $path));
-            });
+        $filesystem = $this->mockFileSystem(
+            [
+                'foo/bar/baz/file.txt',
+                'foo/bar/baz/file2.txt',
+                'foo/bar/baz/excluded/excluded.txt',
+                'foo/bar/baz/excluded/culled/culled.txt',
+                'foo/bar/baz/excluded/important/reincluded.txt',
+                'foo/bar/file3.txt',
+                'foo/lou/someSubdir/file4.txt',
+                'foo/irrelevant1/',
+                'irrelevant2/irrelevant3/irrelevantFile.txt'
+            ],
+            Finder::ALGORITHM_OPTIMIZED === $finderAlgorithm
+                ? [
+                    'foo/irrelevant1',
+                    'irrelevant2',
+                    'foo/bar/baz/excluded/culled'
+                ]
+                : []
+        );
 
         $inFooBar = new InPath(new Path("foo/bar"));
         $inFooLou = new InPath(new Path("foo/lou"));
@@ -204,12 +241,16 @@ class FinderTest extends TestCase
         ];
         sort($expected);
 
-        $actual = array_map(function($v) {return $v['path']; }, iterator_to_array($generator));
-        sort($actual);
-
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, $this->generatorToFileList($generator));
 
         $this->addToAssertionCount(1);
+    }
+
+    protected function generatorToFileList(\Generator $generator) : array
+    {
+        $actual = array_values(array_map(function($v) {return $v['path']; }, iterator_to_array($generator)));
+        sort($actual);
+        return $actual;
     }
 
     protected function mockFileTree(array $pathList) : array
@@ -282,5 +323,19 @@ class FinderTest extends TestCase
             }
         }
         return $result;
+    }
+
+    protected function mockFileSystem(array $paths, array $pathsThatShouldNotBeListed = []) : FilesystemInterface
+    {
+        $fsData = $this->mockFileTree($paths);
+        $filesystem = m::mock(Filesystem::class);
+        $filesystem->shouldReceive('listContents')
+            ->zeroOrMoreTimes()
+            ->andReturnUsing(function(string $path) use ($fsData, $pathsThatShouldNotBeListed) : array {
+
+                $this->assertNotContains($path, $pathsThatShouldNotBeListed);
+                return array_values($this->mockListContents($fsData, $path));
+            });
+        return $filesystem;
     }
 }
