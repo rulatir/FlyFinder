@@ -1,9 +1,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Travis Status](https://img.shields.io/travis/phpDocumentor/FlyFinder.svg?label=Linux)](https://travis-ci.org/phpDocumentor/FlyFinder)
+[![Appveyor Status](https://img.shields.io/appveyor/ci/phpDocumentor/FlyFinder.svg?label=Windows)](https://ci.appveyor.com/project/phpDocumentor/FlyFinder/branch/master)
+[![Coveralls Coverage](https://img.shields.io/coveralls/github/phpDocumentor/FlyFinder.svg)](https://coveralls.io/github/phpDocumentor/FlyFinder?branch=master)
+[![Scrutinizer Code Coverage](https://img.shields.io/scrutinizer/coverage/g/phpDocumentor/FlyFinder.svg)](https://scrutinizer-ci.com/g/phpDocumentor/FlyFinder/?branch=master)
+[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/phpDocumentor/FlyFinder.svg)](https://scrutinizer-ci.com/g/phpDocumentor/FlyFinder/?branch=master)
+[![Stable Version](https://img.shields.io/packagist/v/phpDocumentor/FlyFinder.svg)](https://packagist.org/packages/phpDocumentor/FlyFinder)
+[![Unstable Version](https://img.shields.io/packagist/vpre/phpDocumentor/FlyFinder.svg)](https://packagist.org/packages/phpDocumentor/FlyFinder)
 
-About this fork
-===============
-
-This fork provides an optimization that allows you to fire `->find()` at the filesystem root and not worry about the plugin trying to scan the entire filesystem. Specification classes now implement `->canBeSatisfiedByAnythingBelow($directoryEntry)`, which can optionally be used by Finder to cull directories that cannot possibly contain anything that would satisfy the specification. The logic supports wildcards in `InPath` patterns.
 
 FlyFinder
 =========
