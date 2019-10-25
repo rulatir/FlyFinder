@@ -42,9 +42,20 @@ final class OrSpecification extends CompositeSpecification
      * Checks if the value meets the specification
      *
      * @param mixed[] $value
+     * @return bool
      */
     public function isSatisfiedBy(array $value): bool
     {
         return $this->one->isSatisfiedBy($value) || $this->other->isSatisfiedBy($value);
     }
+
+    /** @inheritDoc */
+    public function canBeSatisfiedByAnythingBelow(array $value): bool
+    {
+        return
+            $this->one->canBeSatisfiedByAnythingBelow($value)
+            || $this->other->canBeSatisfiedByAnythingBelow($value);
+    }
+
+
 }

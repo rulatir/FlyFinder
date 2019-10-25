@@ -26,4 +26,12 @@ interface SpecificationInterface
      * @return bool
      */
     public function isSatisfiedBy(array $value): bool;
+
+    /**
+     * Checks if anything under the directory path in value can possibly meet the specification.
+     *
+     * @param mixed[] $value
+     * @return bool
+     */
+    public function canBeSatisfiedByAnythingBelow(array $value): bool;
 }

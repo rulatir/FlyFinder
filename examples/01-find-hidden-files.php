@@ -11,7 +11,10 @@ use Flyfinder\Specification\IsHidden;
  * In this example we are using a filesystem with the memory adapter
  */
 $filesystem = new Filesystem(new Adapter());
-$filesystem->addPlugin(new Finder());
+$finderPlugin = new Finder();
+/** @noinspection PhpUndefinedVariableInspection */
+$finderPlugin->setAlgorithm($finderAlgorithm);
+$filesystem->addPlugin($finderPlugin);
 
 // Create some demo files
 $filesystem->write('test.txt', 'test');

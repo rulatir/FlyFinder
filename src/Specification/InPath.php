@@ -42,6 +42,7 @@ class InPath extends CompositeSpecification
      * Checks if the value meets the specification
      *
      * @param mixed[] $value
+     * @return bool
      */
     public function isSatisfiedBy(array $value): bool
     {
@@ -84,5 +85,15 @@ class InPath extends CompositeSpecification
         }
 
         return false;
+    }
+
+    /** @inheritDoc */
+    public function canBeSatisfiedByAnythingBelow(array $value): bool
+    {
+        $pathSegments = explode("/",(string)$this->path);
+        $valueSegments = explode("/",$value['path']);
+        $pathPrefixSegments = array_slice($pathSegments,0,min(count($pathSegments),count($valueSegments)));
+        $spec = new InPath(new Path(implode("/",$pathPrefixSegments)));
+        return $spec->isSatisfiedBy($value);
     }
 }

@@ -39,6 +39,7 @@ class HasExtension extends CompositeSpecification
      * Checks if the value meets the specification
      *
      * @param mixed[] $value
+     * @return bool
      */
     public function isSatisfiedBy(array $value): bool
     {

@@ -20,7 +20,12 @@ use PHPUnit\Framework\TestCase;
  */
 class FindHiddenFilesTest extends TestCase
 {
-    public function testFindingHiddenFiles()
+    use TestsBothAlgorithms;
+    /**
+     * @param int $finderAlgorithm
+     * @dataProvider algorithms
+     */
+    public function testFindingHiddenFiles(int $finderAlgorithm)
     {
         $result = [];
         include(__DIR__ . '/../../examples/01-find-hidden-files.php');

@@ -12,7 +12,10 @@ use Flyfinder\Specification\AndSpecification;
 
 // (03-sample-files based on some phpDocumentor2 src files)
 $filesystem = new Filesystem(new Local(__DIR__ . '/03-sample-files'));
-$filesystem->addPlugin(new Finder());
+$finderPlugin = new Finder();
+/** @noinspection PhpUndefinedVariableInspection */
+$finderPlugin->setAlgorithm($finderAlgorithm);
+$filesystem->addPlugin($finderPlugin);
 
 /*
  * "phpdoc -d src -i src/phpDocumentor/DomainModel"

@@ -26,8 +26,14 @@ use League\Flysystem\PluginInterface;
  */
 class Finder implements PluginInterface
 {
+    const ALGORITHM_LEGACY = 0;
+    const ALGORITHM_OPTIMIZED = 1;
+
     /** @var FilesystemInterface */
     private $filesystem;
+
+    /** @var int */
+    private $algorithm = self::ALGORITHM_LEGACY;
 
     /**
      * Get the method name.
@@ -67,6 +73,9 @@ class Finder implements PluginInterface
      * since they have to be recursed into.  Yielded directories
      * will not make their way back to the caller, as they are filtered out
      * by {@link handle()}.
+     * @param SpecificationInterface $specification
+     * @param string $path
+     * @return Generator
      */
     private function yieldFilesInPath(SpecificationInterface $specification, string $path): Generator
     {
@@ -77,10 +86,32 @@ class Finder implements PluginInterface
             }
 
             if ($location['type'] === 'dir') {
+                if (
+                    self::ALGORITHM_OPTIMIZED === $this->algorithm
+                    && !$specification->canBeSatisfiedByAnythingBelow($location)
+                ) {
+                    continue;
+                }
                 foreach ($this->yieldFilesInPath($specification, $location['path']) as $returnedLocation) {
                     yield $returnedLocation;
                 }
             }
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getAlgorithm(): int
+    {
+        return $this->algorithm;
+    }
+
+    /**
+     * @param int $algorithm
+     */
+    public function setAlgorithm(int $algorithm): void
+    {
+        $this->algorithm = self::ALGORITHM_OPTIMIZED === $algorithm ? $algorithm : self::ALGORITHM_LEGACY;
     }
 }

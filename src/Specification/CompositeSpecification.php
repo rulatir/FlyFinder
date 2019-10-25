@@ -23,6 +23,8 @@ abstract class CompositeSpecification implements SpecificationInterface
     /**
      * Returns a specification that satisfies the original specification
      * as well as the other specification
+     * @param SpecificationInterface $other
+     * @return AndSpecification
      */
     public function andSpecification(SpecificationInterface $other): AndSpecification
     {
@@ -32,6 +34,8 @@ abstract class CompositeSpecification implements SpecificationInterface
     /**
      * Returns a specification that satisfies the original specification
      * or the other specification
+     * @param SpecificationInterface $other
+     * @return OrSpecification
      */
     public function orSpecification(SpecificationInterface $other): OrSpecification
     {
@@ -45,5 +49,11 @@ abstract class CompositeSpecification implements SpecificationInterface
     public function notSpecification(): NotSpecification
     {
         return new NotSpecification($this);
+    }
+
+    /** @inheritDoc */
+    public function canBeSatisfiedByAnythingBelow(array $value): bool
+    {
+        return true;
     }
 }
