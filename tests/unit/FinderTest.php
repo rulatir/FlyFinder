@@ -52,9 +52,6 @@ class FinderTest extends TestCase
         $this->assertSame('find', $this->fixture->getMethod());
     }
 
-    const DEEPLY_UNDER_HIDDEN_DIRECTORY = [ 'foo/bar/.hidden/baz/not-hidden.txt' ];
-    const DEEPLY_UNDER_DIRECTORY_WITH_EXTENSION = [ 'foo/bar/directory.ext/baz/not-hidden.txt' ];
-
     public function testIfNotHiddenLetsSubpathsThrough()
     {
         $files = [ 'foo/bar/.hidden/baz/not-hidden.txt' ];
@@ -193,7 +190,7 @@ class FinderTest extends TestCase
      * @param int $finderAlgorithm
      * @dataProvider algorithms
      */
-    public function testPrefixCullingOptimization(int $finderAlgorithm)
+    public function testSubtreeCullingOptimization(int $finderAlgorithm)
     {
         $this->fixture->setAlgorithm($finderAlgorithm);
 
