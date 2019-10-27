@@ -96,4 +96,10 @@ class InPath extends CompositeSpecification
         $spec = new InPath(new Path(implode("/",$pathPrefixSegments)));
         return $spec->isSatisfiedBy($value);
     }
+
+    /** @inheritDoc */
+    public function willBeSatisfiedByEverythingBelow(array $value): bool
+    {
+        return $this->isSatisfiedBy($value);
+    }
 }

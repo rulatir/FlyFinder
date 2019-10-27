@@ -46,6 +46,12 @@ final class NotSpecification extends CompositeSpecification
     /** @inheritDoc */
     public function canBeSatisfiedByAnythingBelow(array $value): bool
     {
-        return !($this->wrapped instanceof InPath) || !$this->wrapped->isSatisfiedBy($value);
+        return !self::thatWillBeSatisfiedByEverythingBelow($this->wrapped, $value);
+    }
+
+    /** @inheritDoc */
+    public function willBeSatisfiedByEverythingBelow(array $value): bool
+    {
+        return !self::thatCanBeSatisfiedByAnythingBelow($this->wrapped, $value);
     }
 }

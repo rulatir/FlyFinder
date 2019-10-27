@@ -97,6 +97,71 @@ class FinderTest extends TestCase
         );
     }
 
+    public function testIfNegatedOrCullsExactMatches()
+    {
+        $files = [
+            'foo/bar/baz/whatever.txt',
+            'foo/gen/pics/bottle.jpg',
+            'foo/lou/time.txt'
+        ];
+        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
+        $this->fixture->setFilesystem($this->mockFileSystem($files,['foo/bar','foo/gen']));
+
+        $negatedOr =
+            (new InPath(new Path("foo/gen")))
+                ->orSpecification(new InPath(new Path("foo/bar")))
+                ->notSpecification();
+
+        $this->assertEquals(
+            ['foo/lou/time.txt'],
+            $this->generatorToFileList($this->fixture->handle($negatedOr))
+        );
+
+        $negatedOrDeMorgan =
+            (new InPath(new Path("foo/gen")))->notSpecification()
+            ->andSpecification((new InPath(new Path("foo/bar")))->notSpecification());
+
+        $this->assertEquals(
+            ['foo/lou/time.txt'],
+            $this->generatorToFileList($this->fixture->handle($negatedOrDeMorgan))
+        );
+    }
+
+    public function testIfNegatedAndCullsExactMatches()
+    {
+        $files = [
+            'foo/bar/baz/whatever.txt',
+            'foo/gen/pics/bottle.jpg',
+            'foo/lou/time.txt'
+        ];
+        $expected = [
+            'foo/gen/pics/bottle.jpg',
+            'foo/lou/time.txt'
+        ];
+        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
+        $this->fixture->setFilesystem($this->mockFileSystem($files,['foo/bar']));
+
+        $negatedAnd =
+            (new InPath(new Path("foo/*")))
+                ->andSpecification(new InPath(new Path("*/bar")))
+                ->notSpecification();
+
+        $this->assertEquals(
+            $expected,
+            $this->generatorToFileList($this->fixture->handle($negatedAnd))
+        );
+
+        $negatedAndDeMorgan =
+            (new InPath(new Path("foo/*")))->notSpecification()
+                ->orSpecification((new InPath(new Path("*/bar")))->notSpecification());
+
+        $this->assertEquals(
+            $expected,
+            $this->generatorToFileList($this->fixture->handle($negatedAndDeMorgan))
+        );
+    }
+
+
     /**
      * @covers ::handle
      * @covers ::setFilesystem

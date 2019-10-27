@@ -18,7 +18,7 @@ namespace Flyfinder\Specification;
  * Class CompositeSpecification
  * Base class for specifications, allows for combining specifications
  */
-abstract class CompositeSpecification implements SpecificationInterface
+abstract class CompositeSpecification implements SpecificationInterface, PrunableInterface
 {
     /**
      * Returns a specification that satisfies the original specification
@@ -56,4 +56,39 @@ abstract class CompositeSpecification implements SpecificationInterface
     {
         return true;
     }
+
+    public function willBeSatisfiedByEverythingBelow(array $value): bool
+    {
+        return false;
+    }
+
+    /**
+     * Provide default {@see canBeSatisfiedByAnythingBelow()} logic for specification classes
+     * that don't implement PrunableInterface
+     * @param SpecificationInterface $specification
+     * @param array $value
+     * @return bool
+     */
+    public static function thatCanBeSatisfiedByAnythingBelow(SpecificationInterface $specification, array $value): bool
+    {
+        return
+            $specification instanceof PrunableInterface
+                ? $specification->canBeSatisfiedByAnythingBelow($value)
+                : true;
+    }
+
+    /**
+     * Provide default {@see willBeSatisfiedByEverythingBelow()} logic for specification classes
+     * that don't implement PrunableInterface
+     * @param SpecificationInterface $specification
+     * @param array $value
+     * @return bool
+     */
+    public static function thatWillBeSatisfiedByEverythingBelow(SpecificationInterface $specification, array $value): bool
+    {
+        return
+            $specification instanceof PrunableInterface
+            && $specification->willBeSatisfiedByEverythingBelow($value);
+    }
+
 }
