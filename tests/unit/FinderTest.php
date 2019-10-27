@@ -26,8 +26,6 @@ use PHPUnit\Framework\TestCase;
  */
 class FinderTest extends TestCase
 {
-    use TestsBothAlgorithms;
-
     /** @var Finder */
     private $fixture;
 
@@ -55,7 +53,6 @@ class FinderTest extends TestCase
     public function testIfNotHiddenLetsSubpathsThrough()
     {
         $files = [ 'foo/bar/.hidden/baz/not-hidden.txt' ];
-        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
         $this->fixture->setFilesystem($this->mockFileSystem($files));
         $notHidden = (new IsHidden())->notSpecification();
         $this->assertEquals(
@@ -67,7 +64,6 @@ class FinderTest extends TestCase
     public function testIfDoubleNotHiddenLetsSubpathsThrough()
     {
         $files = [ '.foo/.bar/not-hidden/.baz/.hidden.txt' ];
-        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
         $this->fixture->setFilesystem($this->mockFileSystem($files));
         $notHidden = (new IsHidden())->notSpecification()->notSpecification();
         $this->assertEquals(
@@ -79,7 +75,6 @@ class FinderTest extends TestCase
     public function testIfNeitherHiddenNorExtLetsSubpathsThrough()
     {
         $files = [ 'foo/bar/.hidden/baz.ext/neither-hidden-nor.ext.zzz' ];
-        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
         $this->fixture->setFilesystem($this->mockFileSystem($files));
 
         $neitherHiddenNorExt =
@@ -104,7 +99,6 @@ class FinderTest extends TestCase
             'foo/gen/pics/bottle.jpg',
             'foo/lou/time.txt'
         ];
-        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
         $this->fixture->setFilesystem($this->mockFileSystem($files,['foo/bar','foo/gen']));
 
         $negatedOr =
@@ -138,7 +132,6 @@ class FinderTest extends TestCase
             'foo/gen/pics/bottle.jpg',
             'foo/lou/time.txt'
         ];
-        $this->fixture->setAlgorithm(Finder::ALGORITHM_OPTIMIZED);
         $this->fixture->setFilesystem($this->mockFileSystem($files,['foo/bar']));
 
         $negatedAnd =
@@ -166,13 +159,9 @@ class FinderTest extends TestCase
      * @covers ::handle
      * @covers ::setFilesystem
      * @covers ::<private>
-     * @dataProvider algorithms
-     * @param int $finderAlgorithm
      */
-    public function testIfCorrectFilesAreBeingYielded(int $finderAlgorithm)
+    public function testIfCorrectFilesAreBeingYielded()
     {
-        $this->fixture->setAlgorithm($finderAlgorithm);
-
         $isHidden = m::mock(IsHidden::class);
         $filesystem = m::mock(Filesystem::class);
 
@@ -214,11 +203,9 @@ class FinderTest extends TestCase
             ->with($listContents1[0])
             ->andReturn(true);
 
-        if (Finder::ALGORITHM_OPTIMIZED === $finderAlgorithm) {
-            $isHidden->shouldReceive('canBeSatisfiedByAnythingBelow')
-                ->with($listContents1[0])
-                ->andReturn(true);
-        }
+        $isHidden->shouldReceive('canBeSatisfiedByAnythingBelow')
+            ->with($listContents1[0])
+            ->andReturn(true);
 
         $isHidden->shouldReceive('isSatisfiedBy')
             ->with($listContents1[1])
@@ -251,14 +238,8 @@ class FinderTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
-    /**
-     * @param int $finderAlgorithm
-     * @dataProvider algorithms
-     */
-    public function testSubtreeCullingOptimization(int $finderAlgorithm)
+    public function testSubtreeCullingOptimization()
     {
-        $this->fixture->setAlgorithm($finderAlgorithm);
-
         $filesystem = $this->mockFileSystem(
             [
                 'foo/bar/baz/file.txt',
@@ -271,13 +252,11 @@ class FinderTest extends TestCase
                 'foo/irrelevant1/',
                 'irrelevant2/irrelevant3/irrelevantFile.txt'
             ],
-            Finder::ALGORITHM_OPTIMIZED === $finderAlgorithm
-                ? [
-                    'foo/irrelevant1',
-                    'irrelevant2',
-                    'foo/bar/baz/excluded/culled'
-                ]
-                : []
+            [
+                'foo/irrelevant1',
+                'irrelevant2',
+                'foo/bar/baz/excluded/culled'
+            ]
         );
 
         $inFooBar = new InPath(new Path("foo/bar"));

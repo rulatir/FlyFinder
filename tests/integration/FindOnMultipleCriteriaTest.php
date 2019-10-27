@@ -20,12 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 class FindOnMultipleCriteriaTest extends TestCase
 {
-    use TestsBothAlgorithms;
-    /**
-     * @param int $finderAlgorithm
-     * @dataProvider algorithms
-     */
-    public function testFindingFilesOnMultipleCriteria(int $finderAlgorithm)
+    public function testFindingFilesOnMultipleCriteria()
     {
         $result = [];
         include(__DIR__ . '/../../examples/02-find-on-multiple-criteria.php');
@@ -33,13 +28,5 @@ class FindOnMultipleCriteriaTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertSame('found.txt', $result[0]['basename']);
         $this->assertSame('example.txt', $result[1]['basename']);
-    }
-
-    public function algorithms() : array
-    {
-        return [
-            'legacy algorithm' => [Finder::ALGORITHM_LEGACY],
-            'optimized algorithm' => [Finder::ALGORITHM_OPTIMIZED]
-        ];
     }
 }

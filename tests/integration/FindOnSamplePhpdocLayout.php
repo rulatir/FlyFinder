@@ -20,12 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 class FindOnSamplePhpdocLayout extends TestCase
 {
-    use TestsBothAlgorithms;
-    /**
-     * @param int $finderAlgorithm
-     * @dataProvider algorithms
-     */
-    public function testFindingOnSamplePhpdocLayout(int $finderAlgorithm)
+    public function testFindingOnSamplePhpdocLayout()
     {
         $result = [];
         include(__DIR__ . '/../../examples/03-sample-phpdoc-layout.php');
@@ -36,12 +31,4 @@ class FindOnSamplePhpdocLayout extends TestCase
         $this->assertSame('Application.php', $result[2]['basename']);
         $this->assertSame('Bootstrap.php', $result[3]['basename']);
     }
-    public function algorithms() : array
-    {
-        return [
-            [Finder::ALGORITHM_LEGACY],
-            [Finder::ALGORITHM_OPTIMIZED]
-        ];
-    }
-
 }

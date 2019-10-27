@@ -14,10 +14,7 @@ use Flyfinder\Specification\InPath;
  * In this example we are using a filesystem with the memory adapter
  */
 $filesystem = new Filesystem(new Adapter());
-$finderPlugin = new Finder();
-/** @noinspection PhpUndefinedVariableInspection */
-$finderPlugin->setAlgorithm($finderAlgorithm);
-$filesystem->addPlugin($finderPlugin);
+$filesystem->addPlugin(new Finder());
 
 // Create some demo files
 $filesystem->write('test.txt', 'test');
